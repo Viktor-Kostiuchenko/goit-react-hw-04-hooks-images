@@ -6,7 +6,7 @@ export default function ImagePending() {
     <Loader
       className={s.loader}
       type="Grid"
-      color="#00BFFF"
+      color="#2c5364"
       height={100}
       width={100}
       timeout={3000}
