@@ -25,7 +25,6 @@ export default function ImageGallery({ imageName, openModal }) {
     }
 
     setStatus(Status.PENDING);
-
     fetchImages(imageName, page).then(
       ({ hits: newImagesArray, totalHits: totalImages }) => {
         if (newImagesArray.length === 0 && totalImages === 0) {
@@ -47,7 +46,6 @@ export default function ImageGallery({ imageName, openModal }) {
   }, [imageName, page]);
 
   const updatePage = () => {
-    console.log('update');
     setPage(state => state + 1);
   };
 
