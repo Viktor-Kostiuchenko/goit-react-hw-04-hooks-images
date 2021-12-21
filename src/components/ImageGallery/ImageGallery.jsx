@@ -1,0 +1,78 @@
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import ImageDataView from './ImageDataView';
+import ImagePending from './ImagePending';
+import { fetchImages } from '../../services/imagesApi';
+import s from './ImageGallery.module.css';
+
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+};
+
+export default function ImageGallery({ imageName, openModal }) {
+  const [imagesArray, setImagesArray] = useState([]);
+  const [imagePrevName, setImagePrevName] = useState(null);
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState(Status.IDLE);
+
+  useEffect(() => {
+    if (!imageName) {
+      return;
+    }
+
+    setStatus(Status.PENDING);
+
+    fetchImages(imageName, page).then(
+      ({ hits: newImagesArray, totalHits: totalImages }) => {
+        if (newImagesArray.length === 0 && totalImages === 0) {
+          toast.error('Oops nothing found');
+          return;
+        }
+        if (newImagesArray.length === 0 && totalImages !== 0) {
+          toast.warning('Nothing more found');
+          return;
+        }
+        if (page === 1) {
+          toast.success(`Found ${totalImages} images`);
+        }
+        setImagePrevName(imageName);
+        setImagesArray([...imagesArray, ...newImagesArray]);
+        setStatus(Status.RESOLVED);
+      },
+    );
+  }, [imageName, page]);
+
+  const updatePage = () => {
+    console.log('update');
+    setPage(state => state + 1);
+  };
+
+  return (
+    <>
+      {status === Status.IDLE && (
+        <h2 className={s.enterData}>Enter data to search...</h2>
+      )}
+
+      {status === Status.PENDING && <ImagePending />}
+
+      {(status === Status.RESOLVED || status === Status.PENDING) && (
+        <ImageDataView
+          imagesArray={imagesArray}
+          openModal={openModal}
+          loadMore={updatePage}
+        />
+      )}
+
+      {status === Status.REJECTED && toast.error('Ooops')}
+    </>
+  );
+}
+
+ImageGallery.propTypes = {
+  imageName: PropTypes.string.isRequired,
+  openModal: PropTypes.func.isRequired,
+};
