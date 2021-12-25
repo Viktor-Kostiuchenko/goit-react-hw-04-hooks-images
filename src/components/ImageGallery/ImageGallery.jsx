@@ -23,27 +23,36 @@ export default function ImageGallery({ imageName, openModal }) {
     if (!imageName) {
       return;
     }
+    if (imageName !== imagePrevName) {
+      setPage(1);
+      setImagesArray([]);
+    }
 
-    setStatus(Status.PENDING);
-    fetchImages(imageName, page).then(
-      ({ hits: newImagesArray, totalHits: totalImages }) => {
-        if (newImagesArray.length === 0 && totalImages === 0) {
-          toast.error('Oops nothing found');
-          return;
-        }
-        if (newImagesArray.length === 0 && totalImages !== 0) {
-          toast.warning('Nothing more found');
-          return;
-        }
-        if (page === 1) {
-          toast.success(`Found ${totalImages} images`);
-        }
-        setImagePrevName(imageName);
-        setImagesArray([...imagesArray, ...newImagesArray]);
-        setStatus(Status.RESOLVED);
-      },
-    );
-  }, [imageName, page]);
+    const asyncFetch = async () => {
+      setStatus(Status.PENDING);
+
+      const { hits: newImagesArray, totalHits: totalImages } =
+        await fetchImages(imageName, page);
+      if (newImagesArray.length === 0 && totalImages === 0) {
+        toast.error('Oops nothing found');
+        return;
+      }
+      if (newImagesArray.length === 0 && totalImages !== 0) {
+        toast.warning('Nothing more found');
+        return;
+      }
+      console.log(page);
+      console.log(imageName);
+      if (page === 1) {
+        toast.success(`Found ${totalImages} images`);
+      }
+      setImagePrevName(imageName);
+      setImagesArray([...imagesArray, ...newImagesArray]);
+      setStatus(Status.RESOLVED);
+    };
+
+    asyncFetch();
+  }, [imageName, imagePrevName, page]);
 
   const updatePage = () => {
     setPage(state => state + 1);
